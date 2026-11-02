@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """Página de dataset — navegar, filtrar, importar e exportar."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import io
 import streamlit as st
 import pandas as pd

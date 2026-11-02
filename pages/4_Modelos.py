@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """Página de modelos — classificação e regressão com CV agrupada por amostra."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import streamlit as st
 import pandas as pd
 import config as C

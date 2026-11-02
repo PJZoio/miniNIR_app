@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """Página de aquisição — ler amostras e verificar saturação em tempo real."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import streamlit as st
 import config as C
 import ui
