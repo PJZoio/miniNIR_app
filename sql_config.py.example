@@ -1,0 +1,13 @@
+# Modelo de configuração do MySQL da faculdade.
+# 1) Copiar para  sql_config.py
+# 2) Preencher com as credenciais reais
+# NÃO versionar: sql_config.py está no .gitignore.
+
+host = "servidor.da.faculdade"   # host/IP do servidor MySQL
+user = ""                        # utilizador
+passwd = ""                      # password
+db = ""                          # nome da base de dados
+
+# Tabelas esperadas no servidor (já usadas pelos scripts originais):
+#   tabelaEnsaios  <-  resumo por ensaio (média/desvio por LED)   [ensaios da app]
+#   dadosPLS       <-  blocos/réplicas por ensaio                 [blocos da app]
