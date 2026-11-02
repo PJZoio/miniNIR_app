@@ -81,3 +81,61 @@ servidor MySQL da faculdade, é um passo adicional fácil de acrescentar
   basta fazer várias aquisições da mesma amostra — o modelo agrupa na mesma.
 - Para corridas pesadas de modelação (grelhas completas, procura de janelas
   FT-NIR), exporta o `Global.csv` e corre os scripts `_GROUPED` no portátil.
+
+---
+
+## Execução no Raspberry Pi (hardware real) — passo a passo
+
+**1. Pré-requisitos do sistema (uma vez):**
+```bash
+sudo raspi-config        # Interface Options -> SPI -> Enable (necessário para o ADC)
+sudo reboot
+```
+O utilizador deve pertencer aos grupos `spi` e `dialout` (acesso ao ADC e à porta série):
+```bash
+sudo usermod -aG spi,gpio,dialout $USER   # terminar sessão e voltar a entrar
+```
+
+**2. Dependências:**
+```bash
+pip install -r requirements.txt -r requirements-pi.txt
+```
+(Instala, além da app, `pyserial`, `spidev` e `RPi.GPIO`.)
+
+**3. Ligações físicas:**
+- HAT Waveshare ADS1263 encaixado no Pi (SPI0).
+- RP2040 (motores) ligado por USB — confirmar a porta com `ls /dev/ttyACM*`
+  (por omissão `/dev/ttyACM0`; mudar com `MININIR_SERIAL=/dev/ttyACM1`).
+
+**4. Arrancar em modo real:**
+```bash
+MININIR_MOCK=0 streamlit run Home.py
+```
+Aceder de outro computador na rede: `http://<ip-do-pi>:8501`.
+
+> Nota: o driver `ADS1263.py` usa a configuração de hardware `config_adc_hat.py`
+> (Waveshare). Isto já está tratado — o `import` foi corrigido para não colidir
+> com o `config.py` da aplicação.
+
+**Resolução de problemas:**
+- `No module named 'spidev'/'RPi.GPIO'` → falta `requirements-pi.txt`.
+- `SPI not enabled` / erro de `/dev/spidev0.0` → SPI não ativo no `raspi-config`.
+- Motores não respondem → porta série errada (`MININIR_SERIAL`) ou utilizador fora do grupo `dialout`.
+
+## Ligação ao MySQL da faculdade (2ª etapa)
+
+O SQLite local continua a ser a fonte de verdade; o MySQL seria um destino de
+**sincronização** (envio dos ensaios/blocos). Para o ligar será preciso:
+
+1. **Credenciais:** copiar `sql_config.py.example` para `sql_config.py` e preencher
+   `host`, `user`, `passwd`, `db` (o ficheiro está no `.gitignore`).
+2. **Cliente MySQL:** `pip install PyMySQL` (ou `mysqlclient`, que precisa de
+   `sudo apt install default-libmysqlclient-dev`).
+3. **Acesso de rede:** o Pi/portátil tem de alcançar o servidor (rede da
+   faculdade ou VPN); confirmar host/porta (3306) e firewall.
+4. **Tabelas no servidor:** `tabelaEnsaios` e `dadosPLS` (as mesmas dos scripts
+   originais) — mapeiam diretamente para os `ensaios`/`blocos` da app.
+5. **Módulo de sincronização:** a acrescentar (`storage/mysql_sync.py`) com uma
+   função "enviar ensaio -> MySQL", chamada opcionalmente após cada aquisição ou
+   em lote. Fica para quando confirmares o esquema e as credenciais com o teu
+   professor.
