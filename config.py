@@ -66,7 +66,26 @@ ESTADIOS = ["Estadio -1", "Estadio 0", "Estadio 1", "Estadio 2",
 # Armazenamento
 # ----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = Path(os.environ.get("MININIR_DATA", BASE_DIR / "data"))
+
+
+def _resolve_data_dir():
+    """Pasta de dados gravável. Usa 'data/' na app (Pi/local); se for só de
+    leitura (ex.: Streamlit Cloud), cai para uma pasta temporária gravável."""
+    env = os.environ.get("MININIR_DATA")
+    if env:
+        return Path(env)
+    candidate = BASE_DIR / "data"
+    try:
+        candidate.mkdir(parents=True, exist_ok=True)
+        t = candidate / ".writetest"
+        t.write_text("x"); t.unlink()
+        return candidate
+    except Exception:
+        import tempfile
+        return Path(tempfile.gettempdir()) / "mininir_data"
+
+
+DATA_DIR = _resolve_data_dir()
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 RAW_DIR = DATA_DIR / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
