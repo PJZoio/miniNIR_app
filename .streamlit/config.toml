@@ -1,1 +1,15 @@
+[theme]
+primaryColor = "#1F3A5F"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f6f8fb"
+textColor = "#1a2330"
+font = "sans serif"
 
+[server]
+headless = true
+# Para aceder a partir de outro computador na rede da faculdade:
+address = "0.0.0.0"
+port = 8501
+
+[browser]
+gatherUsageStats = false
