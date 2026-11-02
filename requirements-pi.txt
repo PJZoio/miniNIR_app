@@ -1,0 +1,12 @@
+# Dependências ADICIONAIS, só no Raspberry Pi (hardware real).
+# Instalar no Pi DEPOIS do requirements.txt:
+#     pip install -r requirements.txt -r requirements-pi.txt
+
+pyserial>=3.5      # comunicação com o RP2040 (motores/seringas)
+spidev>=3.5        # ADC ADS1263 via SPI
+RPi.GPIO>=0.7.1    # GPIO do HAT Waveshare
+
+# Para ligar ao MySQL da faculdade (descomentar quando aplicável):
+# PyMySQL>=1.1      # cliente MySQL em Python puro (mais simples de instalar)
+# ou, em alternativa ao PyMySQL:
+# mysqlclient>=2.2  # (requer libs do sistema: sudo apt install default-libmysqlclient-dev)
