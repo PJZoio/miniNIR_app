@@ -4,6 +4,10 @@
 Entrada da app Streamlit.  Correr a partir desta pasta:
     streamlit run Home.py
 """
+import os, sys
+# Garante que a raiz do projeto está no sys.path (necessário no Streamlit Cloud)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import config as C
 import ui
