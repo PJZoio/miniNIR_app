@@ -71,9 +71,23 @@ def connect():
     return conn
 
 
+# Versão do esquema. Ao mudar de forma incompatível, incrementar: uma BD com
+# versão diferente é reconstruída (os dados de exemplo são re-semeados). Isto
+# evita o erro de uma BD antiga (p. ex. no Streamlit Cloud) ficar com colunas
+# em falta após uma atualização da app.
+SCHEMA_VERSION = 2
+
+
 def init_db():
     conn = connect()
-    conn.executescript(_SCHEMA)
+    ver = conn.execute("PRAGMA user_version").fetchone()[0]
+    if ver != SCHEMA_VERSION:
+        for t in ("blocos", "ensaios", "cycles", "applications"):
+            conn.execute(f"DROP TABLE IF EXISTS {t}")
+        conn.executescript(_SCHEMA)
+        conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+    else:
+        conn.executescript(_SCHEMA)  # garante tabelas numa BD já na versão certa
     conn.commit()
     conn.close()
     # garantir aplicações pré-definidas
