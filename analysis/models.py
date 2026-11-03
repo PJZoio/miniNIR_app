@@ -17,6 +17,7 @@ usa grelhas maiores (correr no portátil/servidor, não no Pi).
 """
 import numpy as np
 import pandas as pd
+import config as C
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression, Ridge
@@ -148,7 +149,7 @@ def run_classification(df, feature_cols, target_col, group_col="EnsaioId",
         y_true_all, y_pred_all = [], []
         try:
             for tr, te in outer.split(X, y, groups):
-                gs = GridSearchCV(est, grid, cv=inner, scoring="f1_macro", n_jobs=-1)
+                gs = GridSearchCV(est, grid, cv=inner, scoring="f1_macro", n_jobs=C.N_JOBS)
                 gs.fit(X[tr], y[tr], groups=groups[tr])
                 best = gs.best_estimator_
                 yp = best.predict(X[te])
@@ -193,7 +194,7 @@ def run_regression(df, feature_cols, target_col, group_col="EnsaioId",
         try:
             y_true_all, y_pred_all, r2s, rmses, tr_r2s = [], [], [], [], []
             for tr, te in outer.split(X, y, groups):
-                gs = GridSearchCV(est, grid, cv=inner, scoring="r2", n_jobs=-1)
+                gs = GridSearchCV(est, grid, cv=inner, scoring="r2", n_jobs=C.N_JOBS)
                 gs.fit(X[tr], y[tr], groups=groups[tr])
                 yp = gs.best_estimator_.predict(X[te]).ravel()
                 tr_r2s.append(r2_score(y[tr], gs.best_estimator_.predict(X[tr]).ravel()))
@@ -228,14 +229,14 @@ def fit_full_model(df, feature_cols, target_col, task, model_name, quick=True):
         est, grid = _clf_models(quick)[model_name]
         n = max(2, min(5, min(len(set(groups[y == c])) for c in np.unique(y)))) if groups is not None else 5
         cv = StratifiedGroupKFold(n_splits=n, shuffle=True, random_state=1)
-        gs = GridSearchCV(est, grid, cv=cv, scoring="f1_macro", n_jobs=-1)
+        gs = GridSearchCV(est, grid, cv=cv, scoring="f1_macro", n_jobs=C.N_JOBS)
         gs.fit(X, y, groups=groups)
     else:
         y = np.asarray(pd.to_numeric(data[target_col]).tolist(), dtype=float)
         est, grid = _reg_models(quick)[model_name]
         n = max(2, min(5, len(np.unique(groups)))) if groups is not None else 5
         cv = GroupKFold(n_splits=n)
-        gs = GridSearchCV(est, grid, cv=cv, scoring="r2", n_jobs=-1)
+        gs = GridSearchCV(est, grid, cv=cv, scoring="r2", n_jobs=C.N_JOBS)
         gs.fit(X, y, groups=groups)
     return gs.best_estimator_, {"task": task, "target": target_col,
                                 "features": feature_cols, "model": model_name,
