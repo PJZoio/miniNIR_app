@@ -71,23 +71,46 @@ def connect():
     return conn
 
 
-# Versão do esquema. Ao mudar de forma incompatível, incrementar: uma BD com
-# versão diferente é reconstruída (os dados de exemplo são re-semeados). Isto
-# evita o erro de uma BD antiga (p. ex. no Streamlit Cloud) ficar com colunas
-# em falta após uma atualização da app.
-SCHEMA_VERSION = 2
+# Colunas/tabelas exigidas pelo código atual. Se faltar alguma numa BD já
+# existente (p. ex. uma BD antiga que ficou no Streamlit Cloud), a BD é
+# incompatível e é recriada do zero (os dados de exemplo são re-semeados).
+_REQUIRED_ENSAIO_COLS = {"sample_no", "sample_name", "is_blank", "labels_json"}
+_REQUIRED_TABLES = {"applications", "cycles", "ensaios", "blocos"}
+
+
+def _schema_compatible():
+    """True se a BD existente já tem o esquema novo. Não cria ficheiro novo."""
+    if not C.DB_PATH.exists():
+        return True  # não existe -> será criada de raiz, compatível
+    try:
+        conn = connect()
+        tbls = {r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(ensaios)")}
+        conn.close()
+        return _REQUIRED_TABLES.issubset(tbls) and _REQUIRED_ENSAIO_COLS.issubset(cols)
+    except Exception:
+        return False
 
 
 def init_db():
+    # Reconstrução robusta: se o esquema for incompatível, apaga o ficheiro e
+    # recria (mais fiável do que DROP/PRAGMA face à semântica de transações do
+    # sqlite3 em versões recentes do Python).
+    if not _schema_compatible():
+        try:
+            C.DB_PATH.unlink()
+        except Exception:
+            # fallback: tentar largar as tabelas antigas
+            try:
+                conn = connect()
+                for t in ("blocos", "ensaios", "cycles", "applications"):
+                    conn.execute(f"DROP TABLE IF EXISTS {t}")
+                conn.commit(); conn.close()
+            except Exception:
+                pass
     conn = connect()
-    ver = conn.execute("PRAGMA user_version").fetchone()[0]
-    if ver != SCHEMA_VERSION:
-        for t in ("blocos", "ensaios", "cycles", "applications"):
-            conn.execute(f"DROP TABLE IF EXISTS {t}")
-        conn.executescript(_SCHEMA)
-        conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
-    else:
-        conn.executescript(_SCHEMA)  # garante tabelas numa BD já na versão certa
+    conn.executescript(_SCHEMA)
     conn.commit()
     conn.close()
     # garantir aplicações pré-definidas
