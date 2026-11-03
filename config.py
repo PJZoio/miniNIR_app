@@ -23,6 +23,11 @@ MOCK_HARDWARE = os.environ.get("MININIR_MOCK", "1") not in ("0", "false", "False
 # ----------------------------------------------------------------------------
 # Aquisição
 # ----------------------------------------------------------------------------
+# Paralelismo dos modelos. 1 por defeito (seguro para o Streamlit Cloud, 1 GB
+# RAM: n_jobs=-1 lança muitos processos que duplicam dados e estoiram o limite).
+# No portátil/Pi com mais memória: MININIR_NJOBS=-1 para usar todos os núcleos.
+N_JOBS = int(os.environ.get("MININIR_NJOBS", "1"))
+
 REF = 5.22              # Tensão de referência do ADC (igual ao código original)
 NUM_SAMPLES = 6000      # Amostras por aquisição
 NUM_CHANNELS = 6        # Canais LED usados

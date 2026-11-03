@@ -1,6 +1,9 @@
 # --- Aplicação (qualquer computador) ---
 streamlit>=1.36
 pandas>=2.0
+# Opção para poupar memória no Streamlit Cloud (1 GB): fixar pandas<3 evita o
+# pyarrow obrigatório do pandas 3.0 (~250 MB). Requer Python <= 3.13 nas
+# Advanced settings do Cloud. Se o usares, troca a linha acima por:  pandas>=2.0,<3
 numpy>=1.24
 plotly>=5.20
 scikit-learn>=1.3
