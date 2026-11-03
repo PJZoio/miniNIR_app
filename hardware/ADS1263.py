@@ -27,7 +27,7 @@
 # THE SOFTWARE.
 #
 
-import config
+import config_adc_hat as config   # config do HAT Waveshare (evita colisão com o config.py da app)
 import RPi.GPIO as GPIO
 
 # gain
