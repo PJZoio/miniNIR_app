@@ -63,6 +63,37 @@ ESTADIOS = ["Estadio -1", "Estadio 0", "Estadio 1", "Estadio 2",
             "Estadio 3", "Estadio 4", "Estadio 5"]
 
 # ----------------------------------------------------------------------------
+# Aplicações e etiquetas (metadados configuráveis por tipo de ensaio)
+# ----------------------------------------------------------------------------
+# Cada aplicação define as ETIQUETAS que o formulário de Aquisição mostra.
+# Campos de etiqueta: key, label, type ('numeric'|'categorical'),
+# unit, role ('regression'|'classification'|'descriptive'), options (categóricas).
+# Intervalos/unidades da DRC confirmados na folha 'Análise estatistica' do xlsx.
+APPLICATIONS = {
+    "DRC": [
+        {"key": "creatinina", "label": "Creatinina", "type": "numeric",
+         "unit": "mg/dL", "role": "regression", "min": 0.7, "max": 7.1},
+        {"key": "ureia", "label": "Ureia", "type": "numeric",
+         "unit": "mg/dL", "role": "regression", "min": 17.0, "max": 255.3},
+        {"key": "albumina", "label": "Albumina", "type": "numeric",
+         "unit": "g/dL", "role": "regression", "min": 2.5, "max": 4.8},
+        {"key": "estadio", "label": "Estádio KDIGO", "type": "categorical",
+         "unit": "", "role": "classification", "options": ESTADIOS},
+    ],
+    "Biodiesel": [
+        {"key": "teor_ester", "label": "Teor de éster (FAME)", "type": "numeric",
+         "unit": "%", "role": "regression"},
+        {"key": "origem", "label": "Origem/tipo", "type": "categorical",
+         "unit": "", "role": "classification", "options": []},
+    ],
+    "Genérica": [
+        {"key": "concentracao", "label": "Concentração", "type": "numeric",
+         "unit": "", "role": "regression"},
+    ],
+}
+DEFAULT_APPLICATION = "DRC"
+
+# ----------------------------------------------------------------------------
 # Armazenamento
 # ----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent

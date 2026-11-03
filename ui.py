@@ -66,20 +66,43 @@ def bar_channels(avg_list, title="Sinal por canal"):
     return fig
 
 
-def line_channels_vs_sample(blocos, x="Conc"):
-    """Média por amostra de cada canal vs concentração/estádio."""
-    per = blocos.groupby(["EnsaioId", x] if x in blocos.columns else ["EnsaioId"])
+def line_channels_vs_sample(blocos, x="sample_no", x_title=None):
+    """Média por amostra de cada canal vs uma etiqueta (numérica ou categórica)."""
+    if x not in blocos.columns:
+        x = "sample_no" if "sample_no" in blocos.columns else "EnsaioId"
+    order = None
+    if x == "estadio":
+        present = [e for e in C.ESTADIOS if e in set(blocos[x].dropna().astype(str))]
+        order = present or None
     fig = go.Figure()
     for ch in C.LED_CHANNELS:
         col = f"LED{ch['idx']}_avg"
-        g = blocos.groupby(x)[col].mean().reset_index() if x in blocos.columns else None
-        if g is None:
-            continue
-        fig.add_trace(go.Scatter(x=g[x], y=g[col], mode="lines+markers",
+        g = blocos.groupby(x)[col].mean().reset_index()
+        try:
+            g = g.sort_values(x, key=lambda s: pd.to_numeric(s, errors="coerce"))
+        except Exception:
+            pass
+        fig.add_trace(go.Scatter(x=g[x].astype(str), y=g[col], mode="lines+markers",
                                  name=f"{ch['nominal']} nm",
                                  line=dict(color=C.PALETTE[f"{ch['nominal']} nm"])))
-    fig.update_layout(title=f"Resposta dos canais vs {x}", xaxis_title=x,
-                      yaxis_title="Sinal (V)", height=420,
+    fig.update_layout(title=f"Resposta dos canais vs {x_title or x}",
+                      xaxis_title=x_title or x, yaxis_title="Sinal (V)", height=420,
+                      margin=dict(t=48, b=20, l=10, r=10),
+                      legend=dict(orientation="h", y=-0.2))
+    if order:
+        fig.update_xaxes(categoryorder="array", categoryarray=order)
+    return fig
+
+
+def compare_channels(rows, labels):
+    """Barras agrupadas: compara o sinal por canal de vários ensaios.
+    rows: lista de listas [6] de médias; labels: nomes de cada ensaio."""
+    fig = go.Figure()
+    for avg, name in zip(rows, labels):
+        fig.add_trace(go.Bar(name=name, x=C.LED_LABELS, y=avg))
+    fig.add_hline(y=C.FULL_SCALE, line_dash="dash", line_color="#b03020")
+    fig.update_layout(barmode="group", title="Comparação de leituras",
+                      yaxis_title="Sinal (V)", height=380,
                       margin=dict(t=48, b=20, l=10, r=10),
                       legend=dict(orientation="h", y=-0.2))
     return fig

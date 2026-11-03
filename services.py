@@ -18,7 +18,7 @@ def ensure_db():
     # semear com os dados reais na primeira utilização, se a BD estiver vazia
     if db.count_ensaios() == 0 and C.SAMPLE_CSV.exists():
         try:
-            db.import_global_csv(C.SAMPLE_CSV, cycle="2025.02.12 (exemplo)")
+            db.import_global_csv(C.SAMPLE_CSV, application="DRC", cycle="DRC-exemplo")
         except Exception as e:
             st.warning(f"Não foi possível semear os dados de exemplo: {e}")
     return True

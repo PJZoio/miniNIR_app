@@ -9,10 +9,17 @@ articulado, com controlo de qualidade de saturação incorporado.
 
 | Área | Descrição |
 |---|---|
-| **① Aquisição** | Lê uma amostra (ADC + 6 canais), posiciona os motores (RP2040), guarda em base de dados e mostra o sinal por canal **com verificação de saturação em tempo real**. |
-| **② Ciclo** | Acompanha o ciclo atual: resposta dos canais vs concentração/estádio, QC de saturação e lista de ensaios. |
-| **③ Dataset** | Navega/filtra todos os dados, **exporta no formato `Global.csv`** (sep `;`, decimais `,`) que os teus modelos já consomem, e importa CSV. |
-| **④ Modelos** | Classificação (doença / estádio) e regressão (concentração ou analito) com **validação cruzada agrupada por amostra física** — sem data leakage. |
+| **Home** | Visão geral + dados (Dataset fundido aqui): **filtros** por aplicação / ciclo / data / etiqueta, KPIs, **QC de saturação** (conjunto ou por ensaio), gráfico de resposta, tabela e **export/import `Global.csv`**. |
+| **① Aquisição** | Novos ensaios: escolhe **aplicação** e **ciclo** (botão «novo», numeração automática), preenche as **etiquetas configuráveis** da aplicação (p. ex. creatinina/ureia/albumina/estádio na DRC), toggle de **branco**, slider de **réplicas**, e vê o sinal por canal **com QC de saturação em tempo real**. Pré-visualização do módulo de **seringas** (análise automática). |
+| **② Ciclo** | Acompanha a ronda: **última leitura**, **comparação** de leituras, métricas (amostras / réplicas / observações / variáveis), resposta dos canais por etiqueta e QC. |
+| **④ Modelos** | Classificação e regressão com **CV agrupada por amostra** (sem data leakage), **multi-seleção de ciclos**, alvos a partir das **etiquetas**, **treino + validação** lado a lado e **guardar o melhor modelo** (base para a futura Inferência). |
+
+### Modelo de dados: aplicações + etiquetas
+Cada **aplicação** (DRC, Biodiesel, Genérica…) define as **etiquetas** do formulário
+(nome, tipo numérico/categórico, unidade, papel regressão/classificação). Um **ciclo**
+é uma ronda de ensaios de uma aplicação; cada **ensaio** guarda os valores das
+etiquetas. Assim a mesma app serve soro/DRC, biodiesel, *flow* industrial, etc., sem
+mudar o esquema. As etiquetas da DRC usam os intervalos da folha 'Análise estatística'.
 
 ## Modo simulado vs hardware real
 
@@ -51,8 +58,8 @@ exemplo em `sample_data/` para a app ficar logo navegável.
 ## Estrutura
 
 ```
-Home.py                 # entrada Streamlit
-pages/                  # 1 Aquisição · 2 Ciclo · 3 Dataset · 4 Modelos
+Home.py                 # entrada Streamlit (visão geral + dados + export/import)
+pages/                  # 1 Aquisição · 2 Ciclo · 4 Modelos
 config.py               # equipamento, canais LED, QC, caminhos, tema
 services.py             # instrumento + BD partilhados (cache)
 ui.py                   # tema e gráficos (Plotly)
@@ -61,7 +68,7 @@ hardware/               # camada de hardware (isolada e testável)
   adc.py, motion.py     # wrappers do hardware real
   mock.py               # backend simulado
   instrument.py         # orquestrador (escolhe real/mock)
-storage/db.py           # SQLite + export/import Global.csv
+storage/db.py           # SQLite (aplicações/ciclos/ensaios+etiquetas/blocos) + export/import
 analysis/qc.py          # saturação / repetibilidade / resposta
 analysis/models.py      # classificação + regressão (CV agrupada)
 sample_data/            # Global.csv de exemplo (2025.02.12)
