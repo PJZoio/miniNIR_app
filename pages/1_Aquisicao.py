@@ -42,14 +42,22 @@ with left:
     app = st.selectbox("Aplicação", apps,
                        index=apps.index(C.DEFAULT_APPLICATION) if C.DEFAULT_APPLICATION in apps else 0)
 
+    # Criar ciclo novo: tratado ANTES de instanciar o selectbox (define o valor
+    # da sua key antes do widget existir — evita StreamlitWidgetAlreadyInstantiated).
+    if st.session_state.pop("_make_cycle", False):
+        st.session_state["aq_cycle"] = db.create_cycle(app)
+
     cyc_df = db.list_cycles()
     app_cycles = cyc_df[cyc_df["application"] == app]["cycle"].tolist()
+    options = app_cycles or ["(nenhum — crie um)"]
+    # garantir que o valor guardado é válido para as opções atuais (muda com a app)
+    if st.session_state.get("aq_cycle") not in options:
+        st.session_state["aq_cycle"] = options[0]
+
     colc1, colc2 = st.columns([3, 1])
-    cycle = colc1.selectbox("Ciclo", app_cycles or ["(nenhum — crie um)"],
-                            index=0, key="aq_cycle")
+    cycle = colc1.selectbox("Ciclo", options, key="aq_cycle")
     if colc2.button("➕ Novo", use_container_width=True, help="Cria um ciclo novo (nome automático)"):
-        new = db.create_cycle(app)
-        st.session_state["aq_cycle"] = new
+        st.session_state["_make_cycle"] = True
         st.rerun()
     if cycle == "(nenhum — crie um)":
         st.info("Crie um ciclo para começar (botão ➕ Novo).")
