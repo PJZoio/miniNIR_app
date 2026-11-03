@@ -1,0 +1,14 @@
+# Dados locais (base SQLite + CSV brutos) — não versionar
+data/
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Config local de hardware (segredos do servidor MySQL, se vier a usar)
+sql_config.py
+
+# Streamlit
+.streamlit/secrets.toml
